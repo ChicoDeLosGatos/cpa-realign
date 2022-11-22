@@ -10,4 +10,3 @@ echo "Lanzando realign v$1..."
 echo "Hecho."
 feh out_v$1.ppm
 feh small.ppm
-

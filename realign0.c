@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <omp.h>
 
 typedef unsigned char Byte;
 
@@ -139,6 +140,7 @@ void realign( int w,int h,Byte a[] ) {
 int main(int argc,char *argv[]) {
   char *in, *out = "";
   int   w, h;
+  double tini, tend;
   Byte *a;
 
   if (argc<2) {
@@ -153,9 +155,10 @@ int main(int argc,char *argv[]) {
 
   a = read_ppm(in,&w,&h);
   if ( a == NULL ) return 1;
-
+  tini = omp_get_wtime();
   realign( w,h,a );
-
+  tend = omp_get_wtime();
+  printf("La ejecución ha durado: %.2f", tend-tini);
   if ( out[0] != '\0' ) write_ppm(out,w,h,a);
 
   free(a);
