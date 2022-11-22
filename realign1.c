@@ -105,7 +105,7 @@ void realign( int w,int h,Byte a[] ) {
     // Find offset of line y that produces the minimum distance between lines y and y-1
     dmin = distance( w, &a[3*(y-1)*w], &a[3*y*w], INT_MAX ); // offset=0
     bestoff = 0;
-    #pragma omp parallel for reduction(+:d) reduction(min:dmin)
+    #pragma omp parallel for reduction(+:d) reduction(min:dmin) private(bestoff)
     for ( off = 1 ; off < w ; off++ ) {
       d  = distance( w-off, &a[3*(y-1)*w], &a[3*(y*w+off)], dmin );
       d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
@@ -126,7 +126,7 @@ void realign( int w,int h,Byte a[] ) {
   }
 
   // Part 3. Shift each line to its place, using auxiliary buffer v
-  #pragma omp parallel private(v,y)
+  #pragma omp parallel shared(v) private(y)
   {
     v = malloc( 3 * max * sizeof(Byte) );
     if ( v == NULL )
