@@ -1,0 +1,5 @@
+#!/bin/bash
+cd "$(dirname "${BASH_SOURCE[1]}")"
+echo "Lanzando la versión $1..."
+$1/realign small.ppm $1/output.ppm >> $1/time.log
+echo "Hecho."

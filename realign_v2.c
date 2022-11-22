@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <time.h>
 #include <omp.h>
 
 typedef unsigned char Byte;
@@ -28,6 +29,7 @@ Byte *read_ppm(char file[],int *width,int *height) {
       a=(Byte*)malloc(n*sizeof(Byte));
       if (a==NULL) {
         fprintf(stderr,"ERROR: Could not allocate memory for %d bytes.\n",(int)n);
+        exit(-1);
       } else{
         fread(a,1,n,f);
       }
@@ -96,45 +98,58 @@ void realign( int w,int h,Byte a[] ) {
   voff = malloc( h * sizeof(int) );
   if ( voff == NULL ) {
     fprintf(stderr,"ERROR: Not enough memory for voff\n");
+    exit(-1);
     return;
   }
-
-  // Part 1. Find optimal offset of each line with respect to the previous line
-  for ( y = 1 ; y < h ; y++ ) {
-
-    // Find offset of line y that produces the minimum distance between lines y and y-1
-    dmin = distance( w, &a[3*(y-1)*w], &a[3*y*w], INT_MAX ); // offset=0
-    bestoff = 0;
-    for ( off = 1 ; off < w ; off++ ) {
-      d  = distance( w-off, &a[3*(y-1)*w], &a[3*(y*w+off)], dmin );
-      d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
-      // Update minimum distance and corresponding best offset
-      if ( d < dmin ) { dmin = d; bestoff = off; }
-    }
-    voff[y] = bestoff;
-  }
-
-  // Part 2. Convert offsets from relative to absolute and find maximum offset of any line
-  max = 0;
-  voff[0] = 0;
-  for ( y = 1 ; y < h ; y++ ) {
-    voff[y] = ( voff[y-1] + voff[y] ) % w;
-    d = voff[y] <= w / 2 ? voff[y] : w - voff[y];
-    if ( d > max ) max = d;
-  }
-
-  // Part 3. Shift each line to its place, using auxiliary buffer v
-  v = malloc( 3 * max * sizeof(Byte) );
-  if ( v == NULL )
-    fprintf(stderr,"ERROR: Not enough memory for v\n");
-  else {
+  #pragma omp parallel private(v)
+  {
+    // Part 1. Find optimal offset of each line with respect to the previous line
+    #pragma omp for reduction(+:d) private(off)
     for ( y = 1 ; y < h ; y++ ) {
-      cyclic_shift( w, &a[3*y*w], voff[y], v );
+      // Find offset of line y that produces the minimum distance between lines y and y-1
+      dmin = distance( w, &a[3*(y-1)*w], &a[3*y*w], INT_MAX ); // offset=0
+      bestoff = 0;
+      for ( off = 1 ; off < w ; off++ ) {
+        d  = distance( w-off, &a[3*(y-1)*w], &a[3*(y*w+off)], dmin );
+        d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
+        // Update minimum distance and corresponding best offset
+        if ( d < dmin ) { dmin = d; bestoff = off; }
+      }
+      voff[y] = bestoff;
+    }
+
+    // Part 2. Convert offsets from relative to absolute and find maximum offset of any line
+    #pragma omp master
+    {
+      max = 0;
+      voff[0] = 0;
+      for ( y = 1 ; y < h ; y++ ) {
+        voff[y] = ( voff[y-1] + voff[y] ) % w;
+        d = voff[y] <= w / 2 ? voff[y] : w - voff[y];
+        if ( d > max ) max = d;
+      }
+    }
+    
+    // Part 3. Shift each line to its place, using auxiliary buffer v
+    v = malloc( 3 * max * sizeof(Byte) );
+    if ( v == NULL ){
+      fprintf(stderr,"ERROR: Not enough memory for v\n");
+      exit(-1);
+    } else {
+      #pragma omp for
+      for ( y = 1 ; y < h ; y++ ) {
+        cyclic_shift( w, &a[3*y*w], voff[y], v );
+      }
     }
     free(v);
   }
 
   free(voff);
+}
+
+void print_info(double tdiff) 
+{
+  printf("|\t%lu\t|\t2\t|\t%.2f\t|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
 }
 
 int main(int argc,char *argv[]) {
@@ -155,10 +170,13 @@ int main(int argc,char *argv[]) {
 
   a = read_ppm(in,&w,&h);
   if ( a == NULL ) return 1;
+
   tini = omp_get_wtime();
   realign( w,h,a );
   tend = omp_get_wtime();
-  printf("La ejecución ha durado: %.2f", tend-tini);
+  
+  print_info(tend-tini);
+
   if ( out[0] != '\0' ) write_ppm(out,w,h,a);
 
   free(a);

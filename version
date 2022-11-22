@@ -1,5 +1,11 @@
 #!/bin/bash
 cd "$(dirname "${BASH_SOURCE[1]}")"
 echo "Creando la versión $2 a partir de la versión $1..."
-cp realign$1.c realign$2.c
+mkdir -p v$2
+cp realign_v$1.c realign_v$2.c
+echo "-------------------------------------" > v$2/time.log
+echo "|   TIMESTAMP   |   V   |   TIME    |" >> v$2/time.log
+echo "-------------------------------------" >> v$2/time.log
 echo "Hecho."
+
+# gcc -fopenmp -Wall -o v2/realign realign2.c -lm 

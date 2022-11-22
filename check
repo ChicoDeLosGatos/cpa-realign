@@ -1,0 +1,8 @@
+#!/bin/bash
+cd "$(dirname "${BASH_SOURCE[1]}")"
+echo "Comprobando la versión $1..."
+cat $1/time.log
+echo
+feh $1/output.ppm
+feh small.ppm
+echo "Hecho."
