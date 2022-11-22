@@ -160,7 +160,7 @@ int main(int argc,char *argv[]) {
   a = read_ppm(in,&w,&h);
   if ( a == NULL ) return 1;
 
-    tini = omp_get_wtime();
+  tini = omp_get_wtime();
   realign( w,h,a );
   tend = omp_get_wtime();
   printf("La ejecución ha durado: %.2f", tend-tini);

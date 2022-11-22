@@ -98,7 +98,7 @@ void realign( int w,int h,Byte a[] ) {
     fprintf(stderr,"ERROR: Not enough memory for voff\n");
     return;
   }
-  #pragma omp parallel
+  #pragma omp parallel private(v)
   {
     // Part 1. Find optimal offset of each line with respect to the previous line
     #pragma omp for reduction(+:d) private(off)
@@ -136,9 +136,10 @@ void realign( int w,int h,Byte a[] ) {
       for ( y = 1 ; y < h ; y++ ) {
         cyclic_shift( w, &a[3*y*w], voff[y], v );
       }
+    free(v);
     }
   }
-  free(v);
+
   free(voff);
 }
 
@@ -160,9 +161,11 @@ int main(int argc,char *argv[]) {
 
   a = read_ppm(in,&w,&h);
   if ( a == NULL ) return 1;
+
   tini = omp_get_wtime();
   realign( w,h,a );
   tend = omp_get_wtime();
+  
   printf("La ejecución ha durado: %.2f", tend-tini);
   if ( out[0] != '\0' ) write_ppm(out,w,h,a);
 
