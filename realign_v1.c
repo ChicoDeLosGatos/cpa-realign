@@ -148,7 +148,7 @@ void realign( int w,int h,Byte a[] ) {
 
 void print_info(double tdiff) 
 {
-  printf("|\t%lu\t|\t1\t|\t%.2f\t|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
+  printf("|	%lu	|	1	|	%.2f	|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
 }
 
 int main(int argc,char *argv[]) {

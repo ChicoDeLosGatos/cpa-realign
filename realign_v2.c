@@ -101,7 +101,7 @@ void realign( int w,int h,Byte a[] ) {
     exit(-1);
     return;
   }
-  #pragma omp parallel private(v)
+  #pragma omp parallel private(v,max)
   {
     // Part 1. Find optimal offset of each line with respect to the previous line
     #pragma omp for reduction(+:d) private(off)
@@ -119,7 +119,7 @@ void realign( int w,int h,Byte a[] ) {
     }
 
     // Part 2. Convert offsets from relative to absolute and find maximum offset of any line
-    #pragma omp master
+    #pragma omp single
     {
       max = 0;
       voff[0] = 0;
@@ -149,7 +149,7 @@ void realign( int w,int h,Byte a[] ) {
 
 void print_info(double tdiff) 
 {
-  printf("|\t%lu\t|\t2\t|\t%.2f\t|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
+  printf("|	%lu	|	2	|	%.2f	|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
 }
 
 int main(int argc,char *argv[]) {
