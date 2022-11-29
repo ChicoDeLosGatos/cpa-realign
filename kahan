@@ -1,2 +1,2 @@
 #!/bin/bash
-ssh -Y -l maanpe3@alumno.upv.es kahan.dsic.upv.es
+ssh -Y -l $1@alumno.upv.es kahan.dsic.upv.es
