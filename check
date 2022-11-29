@@ -5,7 +5,7 @@ cat $1/time.log
 echo
 feh $1/output.ppm
 feh small.ppm
-echo "Comprobando diferencias entre la versión $1 y la versión secuencial."
-diff v0/output.ppm $1/output.ppm
-echo "Si no ha aparecido nada, todo está correcto."
+#echo "Comprobando diferencias entre la versión $1 y la versión secuencial."
+#diff v0/output.ppm $1/output.ppm
+#echo "Si no ha aparecido nada, todo está correcto."
 echo "Hecho."
