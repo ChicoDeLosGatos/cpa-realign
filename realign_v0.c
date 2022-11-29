@@ -8,6 +8,8 @@
 
 typedef unsigned char Byte;
 
+int t = 0;
+
 // Read a P6 ppm image file, allocating memory
 // It returns NULL if there is an error
 Byte *read_ppm(char file[],int *width,int *height) {
@@ -113,6 +115,7 @@ void realign( int w,int h,Byte a[] ) {
       d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
       // Update minimum distance and corresponding best offset
       if ( d < dmin ) { dmin = d; bestoff = off; }
+       t = omp_get_num_threads();
     }
     voff[y] = bestoff;
   }
@@ -145,7 +148,7 @@ void realign( int w,int h,Byte a[] ) {
 
 void print_info(double tdiff) 
 {
-  printf("|	%lu	|	0	|	%.2f	|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
+  printf("|  %lu   |   1   |   %.d   |   %2.f      |\n---------------------------------------------\n", (unsigned long)time(NULL), t,tdiff);
 }
 
 int main(int argc,char *argv[]) {

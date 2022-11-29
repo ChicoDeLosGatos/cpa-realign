@@ -1,6 +1,6 @@
 #!/bin/bash
 cd "$(dirname "${BASH_SOURCE[1]}")"
-mkdir -p v$1
-echo "-------------------------------------" > v$1/time.log
-echo "|   TIMESTAMP   |   V   |   TIME    |" >> v$1/time.log
-echo "-------------------------------------" >> v$1/time.log
+mkdir -p $1
+echo "---------------------------------------------" > $1/time.log
+echo "|   TIMESTAMP   |   V   |   T   |   TIME    |" >> $1/time.log
+echo "---------------------------------------------" >> $1/time.log

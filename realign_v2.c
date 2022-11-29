@@ -8,6 +8,8 @@
 
 typedef unsigned char Byte;
 
+int t = 0;
+
 // Read a P6 ppm image file, allocating memory
 // It returns NULL if there is an error
 Byte *read_ppm(char file[],int *width,int *height) {
@@ -101,7 +103,7 @@ void realign( int w,int h,Byte a[] ) {
     exit(-1);
     return;
   }
-  #pragma omp parallel private(v,max)
+  #pragma omp parallel private(v)
   {
     // Part 1. Find optimal offset of each line with respect to the previous line
     #pragma omp for reduction(+:d) private(off)
@@ -114,12 +116,14 @@ void realign( int w,int h,Byte a[] ) {
         d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
         // Update minimum distance and corresponding best offset
         if ( d < dmin ) { dmin = d; bestoff = off; }
+         t = omp_get_num_threads();
       }
       voff[y] = bestoff;
     }
 
     // Part 2. Convert offsets from relative to absolute and find maximum offset of any line
-    #pragma omp single
+    // Este ha de esperar a que la part1 acabe
+    #pragma omp single barrier
     {
       max = 0;
       voff[0] = 0;
@@ -131,17 +135,20 @@ void realign( int w,int h,Byte a[] ) {
     }
     
     // Part 3. Shift each line to its place, using auxiliary buffer v
-    v = malloc( 3 * max * sizeof(Byte) );
-    if ( v == NULL ){
-      fprintf(stderr,"ERROR: Not enough memory for v\n");
-      exit(-1);
-    } else {
-      #pragma omp for
-      for ( y = 1 ; y < h ; y++ ) {
-        cyclic_shift( w, &a[3*y*w], voff[y], v );
+    #pragma omp schedule(static) ordered
+    {
+      v = malloc( 3 * max * sizeof(Byte) );
+      if ( v == NULL ){
+        fprintf(stderr,"ERROR: Not enough memory for v\n");
+        exit(-1);
+      } else {
+        #pragma omp for
+        for ( y = 1 ; y < h ; y++ ) {
+          cyclic_shift( w, &a[3*y*w], voff[y], v );
+        }
       }
+      free(v);
     }
-    free(v);
   }
 
   free(voff);
@@ -149,7 +156,7 @@ void realign( int w,int h,Byte a[] ) {
 
 void print_info(double tdiff) 
 {
-  printf("|	%lu	|	2	|	%.2f	|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
+  printf("|  %lu   |   1   |   %.d   |   %2.f      |\n---------------------------------------------\n", (unsigned long)time(NULL), t,tdiff);
 }
 
 int main(int argc,char *argv[]) {

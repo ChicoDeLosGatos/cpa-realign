@@ -1,6 +1,6 @@
 #!/bin/bash
 cd "$(dirname "${BASH_SOURCE[1]}")"
-echo "Creando la versión $2 a partir de la versión $1..."
-cp realign_v$1.c realign_v$2.c
+echo "Creando la versións $2 a partir de la versión $1..."
+cp realign_$1.c realign_$2.c
 ./env $2
 echo "Hecho."

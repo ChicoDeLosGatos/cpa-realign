@@ -1,5 +1,7 @@
 #!/bin/bash
 cd "$(dirname "${BASH_SOURCE[1]}")"
+rm -rf $1
+./env $1
 echo "Compilando la versión $1..."
 gcc -fopenmp -Wall -o $1/realign realign_$1.c -lm 
 echo "Hecho."

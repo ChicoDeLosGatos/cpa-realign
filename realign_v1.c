@@ -8,6 +8,8 @@
 
 typedef unsigned char Byte;
 
+int t = 0;
+
 // Read a P6 ppm image file, allocating memory
 // It returns NULL if there is an error
 Byte *read_ppm(char file[],int *width,int *height) {
@@ -91,8 +93,9 @@ void cyclic_shift( int n, Byte a[], int p, Byte v[] ) {
 }
 
 // Realign the rows of image a, of width w and height h
-void realign( int w,int h,Byte a[] ) {
+void realign( int w,int h,Byte a[]) {
   int y, off,bestoff,dmin,max, d, *voff;
+  
   Byte *v;
 
 
@@ -116,6 +119,7 @@ void realign( int w,int h,Byte a[] ) {
       d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
       // Update minimum distance and corresponding best offset
       if ( d < dmin ) { dmin = d; bestoff = off; }
+      t = omp_get_num_threads();
     }
     voff[y] = bestoff;
   }
@@ -148,7 +152,7 @@ void realign( int w,int h,Byte a[] ) {
 
 void print_info(double tdiff) 
 {
-  printf("|	%lu	|	1	|	%.2f	|\n-------------------------------------\n", (unsigned long)time(NULL), tdiff);
+  printf("|  %lu   |   1   |   %.d   |   %2.f      |\n---------------------------------------------\n", (unsigned long)time(NULL), t,tdiff);
 }
 
 int main(int argc,char *argv[]) {
@@ -171,7 +175,7 @@ int main(int argc,char *argv[]) {
   if ( a == NULL ) return 1;
 
   tini = omp_get_wtime();
-  realign( w,h,a );
+  realign( w,h,a);
   tend = omp_get_wtime();
   print_info(tend-tini);
 
