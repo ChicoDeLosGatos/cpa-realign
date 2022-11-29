@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --time=5:00
+#SBATCH --partition=cpa
+
+cd "$(dirname "${BASH_SOURCE[1]}")"
+OMP_NUM_THREADS=$1; OMP_SCHEDULE="static,$2"
+export OMP_NUM_THREADS OMP_SCHEDULE
+./realign_$3 large.ppm output_$3.ppm

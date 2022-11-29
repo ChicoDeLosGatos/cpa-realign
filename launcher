@@ -1,0 +1,7 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --time=5:00
+#SBATCH --partition=cpa
+
+cd "$(dirname "${BASH_SOURCE[1]}")"
+OMP_NUM_THREADS=$1 ./realign_$2 large.ppm output_$2.ppm
