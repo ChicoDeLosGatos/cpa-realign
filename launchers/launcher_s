@@ -1,0 +1,8 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --time=5:00
+#SBATCH --partition=cpa
+
+OMP_NUM_THREADS=$1; OMP_SCHEDULE="static"
+export OMP_NUM_THREADS OMP_SCHEDULE
+~/CPA/prac2/$2/realign $3.ppm output_$3_$2.ppm
