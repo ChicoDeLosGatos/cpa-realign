@@ -106,7 +106,7 @@ void realign( int w,int h,Byte a[] ) {
   #pragma omp parallel private(v, bestoff, dmin)
   {
     // Part 1. Find optimal offset of each line with respect to the previous line
-    #pragma omp for reduction(+:d) private(off)
+    #pragma omp for reduction(+:d) private(off) schedule(runtime)
     for ( y = 1 ; y < h ; y++ ) {
       // Find offset of line y that produces the minimum distance between lines y and y-1
       dmin = distance( w, &a[3*(y-1)*w], &a[3*y*w], INT_MAX ); // offset=0
