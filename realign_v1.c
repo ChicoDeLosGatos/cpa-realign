@@ -113,7 +113,7 @@ void realign( int w,int h,Byte a[]) {
     dmin = distance( w, &a[3*(y-1)*w], &a[3*y*w], INT_MAX ); // offset=0
     bestoff = 0;
    
-    #pragma omp parallel for reduction(+:d)
+    #pragma omp parallel for reduction(+:d) schedule(runtime)
     for ( off = 1 ; off < w ; off++ ) {
       d  = distance( w-off, &a[3*(y-1)*w], &a[3*(y*w+off)], dmin );
       d += distance( off, &a[3*(y*w-off)], &a[3*y*w], dmin-d );
